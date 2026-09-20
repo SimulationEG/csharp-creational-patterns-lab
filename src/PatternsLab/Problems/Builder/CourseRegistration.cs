@@ -1,24 +1,10 @@
 namespace PatternsLab.Problems.Builder;
 
-/// <summary>
-/// PROBLEM 3 — Builder
-///
-/// Pain: <see cref="CourseRegistration"/> has many optional fields.
-/// Call sites use telescoping constructors + remember argument order,
-/// or set public fields after <c>new</c> and forget required combinations
-/// (LiveGroup requires GroupCode; VideosOnly must not set GroupCode).
-///
-/// YOUR TASK: introduce a Builder (fluent) that:
-/// - makes required vs optional clear
-/// - validates incompatible combinations before Build()
-/// - removes the need for long constructor argument lists at call sites
-/// Keep the final product as an immutable-ish registration object if you can.
-/// </summary>
 public sealed class CourseRegistration
 {
     public string StudentEmail { get; }
     public string CourseCode { get; }
-    public string AccessMode { get; }          // "LiveGroup" | "VideosOnly"
+    public string AccessMode { get; }
     public string? GroupCode { get; }
     public string? DiscountCode { get; }
     public bool SendWhatsApp { get; }
@@ -26,7 +12,6 @@ public sealed class CourseRegistration
     public string? MentorNote { get; }
     public DateOnly? PreferredStart { get; }
 
-    // Telescoping mess — hard to call, easy to swap args.
     public CourseRegistration(
         string studentEmail,
         string courseCode,
@@ -61,14 +46,10 @@ public sealed class CourseRegistration
         => $"{StudentEmail} → {CourseCode} [{AccessMode}] group={GroupCode ?? "-"} discount={DiscountCode ?? "-"} wa={SendWhatsApp} mail={SendEmailWelcome}";
 }
 
-/// <summary>
-/// Call-site pain demo — after Builder, this should become readable fluent calls.
-/// </summary>
 public static class RegistrationCallSites
 {
     public static CourseRegistration CreateLiveStudentUgly()
     {
-        // Which bool is WhatsApp? Which is email? Easy to swap.
         return new CourseRegistration(
             "sara@mail.com",
             "SEF-101",

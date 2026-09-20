@@ -1,105 +1,82 @@
 # Student Requirements — Creational Patterns Lab
 
-**Repo:** clone this repository and work on a branch named `solution/<your-name>`.
+**Repo:** https://github.com/SimulationEG/csharp-creational-patterns-lab  
 
-**Allowed patterns (use all three):**
+Clone the repo. Work on a branch: `solution/<your-name>`.
 
-1. Singleton with `Lazy<T>`
-2. Prototype (deep clone)
-3. Builder (fluent API)
+Run first:
 
-Do **not** replace these with other patterns for this assignment.
+```bash
+dotnet run --project src/PatternsLab.Runner
+```
 
----
-
-## Problem 1 — Singleton (`Lazy<T>`)
-
-**Location:** `src/PatternsLab/Problems/Singleton/`
-
-**Current pain**
-
-- `BillingFeature`, `ReportingFeature`, and `NotifyFeature` each call `new AppConfiguration()`.
-- Construction is slow and each call gets a **different** `InstanceId`.
-- Settings are supposed to be **one shared configuration** for the whole app.
-
-**What you must do**
-
-1. Refactor `AppConfiguration` into a **Singleton**.
-2. Use **`Lazy<T>`** for thread-safe lazy initialization (not a hand-rolled double-check unless your instructor allows it *in addition* to Lazy).
-3. Hide the constructor (private / non-public).
-4. Expose a single accessor (e.g. `AppConfiguration.Instance`).
-5. Update the three features to use that single instance.
-
-**Acceptance**
-
-- Running the runner prints **one** construction log.
-- `AppConfiguration.ConstructedCount == 1`.
-- All features print the **same** `InstanceId`.
+Read the output. Fix each problem with the required pattern.
 
 ---
 
-## Problem 2 — Prototype
+## 1) Singleton (`Lazy<T>`)
 
-**Location:** `src/PatternsLab/Problems/Prototype/`
+**Code:** `src/PatternsLab/Problems/Singleton/`
 
-**Current pain**
+`DatabaseService` and `UiService` each create their own `AppConfig`. Changing the theme on one does not update the other. Loading from disk runs more than once.
 
-- Building `ExamPaper.CreateMidtermBank()` is expensive.
-- Teachers need a copy of the paper with small edits (title / duration).
-- `CloneWrong()` shares nested `List`s — changing clone options changes the original (`HACKED` demo).
+| # | Requirement |
+|---|-------------|
+| R1 | Only one `AppConfig` object in the whole application. |
+| R2 | Every class sees the same values. |
+| R3 | The slow loading happens only once. |
+| R4 | It is thread-safe. |
+| R5 | Other code cannot create one with `new`. |
 
-**What you must do**
+Use **`Lazy<T>`** for the Singleton.
 
-1. Implement a proper **Prototype** deep clone (name it `Clone()`, or implement `ICloneable`, or a deep copy constructor — be consistent).
-2. Nested `ExamQuestion` objects and their `Options` lists must be **independent** after cloning.
-3. Update the runner demo to use your clone instead of `CloneWrong()`.
-4. Keep `CreateMidtermBank()` as the expensive “create once” path; clones must not rebuild the bank from scratch.
-
-**Acceptance**
-
-- After changing `clone.Questions[0].Options[0]`, the **original** options stay unchanged.
-- Clone keeps question count and can override `Title` / `DurationMinutes` independently.
+**Done when:** theme change is visible to UI, `ReferenceEquals` is true, `LoadCount == 1`, constructor is not usable from outside.
 
 ---
 
-## Problem 3 — Builder
+## 2) Prototype
 
-**Location:** `src/PatternsLab/Problems/Builder/`
+**Code:** `src/PatternsLab/Problems/Prototype/`
 
-**Current pain**
+Creating many `Orc`s reloads the 3D model every time. `EnemyCopyHelper.CopyEnemy` is slow, type-switch based, cannot copy private `_modelData`, and shares `Weapon` / `Abilities` (shallow).
 
-- `CourseRegistration` uses a long constructor (telescoping / many optional args).
-- Call sites in `RegistrationCallSites` are hard to read; bools can be swapped by mistake.
-- Business rules:
-  - `LiveGroup` **requires** `GroupCode`
-  - `VideosOnly` **must not** have `GroupCode`
+| # | Requirement |
+|---|-------------|
+| R1 | Creating a new enemy from an existing one must not repeat the slow loading. |
+| R2 | Client code works with the base type `Enemy` and doesn't need to know if it is an `Orc` or `Elf`. |
+| R3 | The copy must include private state (`_modelData`). |
+| R4 | The copy must be independent: changing its `Weapon` or `Abilities` must not affect the original (deep copy). |
+| R5 | (Bonus) A registry that stores named prototypes and returns clones on demand. |
 
-**What you must do**
+**Done when:** cloning is fast, same `ModelId` as prototype, mutating copy does not change original, no `if (e is Orc)` in client copy logic.
 
-1. Add a **Builder** (fluent methods like `WithEmail`, `AsLiveGroup`, `WithDiscount`, …).
-2. `Build()` must validate the LiveGroup / VideosOnly rules (throw clear exceptions).
-3. Rewrite `RegistrationCallSites` (or replace them) to use the builder — no long constructor lists at the call site.
-4. Required fields (email, course code, access mode) must be obvious in the fluent flow.
+---
 
-**Acceptance**
+## 3) Builder
 
-- Live + VideosOnly examples are created via Builder and print correctly.
-- Invalid combinations fail at `Build()` with a clear message.
-- Call sites are readable without counting constructor parameter positions.
+**Code:** `src/PatternsLab/Problems/Builder/`
+
+`CourseRegistration` uses a long constructor. Call sites are hard to read. Rules: `LiveGroup` needs `GroupCode`; `VideosOnly` must not have `GroupCode`.
+
+| # | Requirement |
+|---|-------------|
+| R1 | Create registrations with a fluent **Builder** (no long argument lists at call sites). |
+| R2 | Required vs optional steps are clear in the fluent API. |
+| R3 | `Build()` validates LiveGroup / VideosOnly rules and throws clear errors. |
+| R4 | Rewrite `RegistrationCallSites` to use the Builder. |
+
+**Done when:** both sample registrations are built via Builder and invalid combinations fail at `Build()`.
 
 ---
 
 ## Deliverables
 
-1. Push your branch with the three refactors.
-2. Short `NOTES.md` (max 1 page) listing for each problem:
-   - what was wrong
-   - what you changed
-   - how you verified acceptance
-3. `dotnet run --project src/PatternsLab.Runner` must succeed.
+1. Branch with all three solutions.
+2. Short `NOTES.md`: for each problem — what was wrong, what you changed, how you verified.
+3. `dotnet run --project src/PatternsLab.Runner` succeeds.
 
 ## Rules
 
-- Keep the lab in **C# / .NET**.
-- No deleting the problem demos — fix them.
-- Do not add heavy frameworks; plain class library + console is enough.
+- C# / .NET only.
+- Do not delete the demos — fix them.
+- No heavy frameworks.

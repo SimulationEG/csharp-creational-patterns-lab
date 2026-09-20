@@ -1,24 +1,49 @@
-﻿using PatternsLab.Problems.Builder;
+﻿using System.Diagnostics;
+using PatternsLab.Problems.Builder;
 using PatternsLab.Problems.Prototype;
 using PatternsLab.Problems.Singleton;
 
-Console.WriteLine("=== PROBLEM 1: Singleton (Lazy) — watch multiple constructions ===");
-BillingFeature.Run();
-ReportingFeature.Run();
-NotifyFeature.Run();
-Console.WriteLine($"ConstructedCount={AppConfiguration.ConstructedCount} (should become 1 after Lazy Singleton)\n");
+Console.WriteLine("=== SINGLETON: BEFORE ===\n");
 
-Console.WriteLine("=== PROBLEM 2: Prototype — broken shallow clone ===");
-var original = ExamPaper.CreateMidtermBank();
-var clone = original.CloneWrong();
-clone.Title = "OOP Midterm — Make-up";
-clone.DurationMinutes = 60;
-clone.Questions[0].Options[0] = "HACKED"; // corrupts original too
-original.PrintSummary("original");
-clone.PrintSummary("clone   ");
-Console.WriteLine("If original q1.options shows HACKED — clone is wrong. Fix with deep Prototype.\n");
+var db = new DatabaseService();
+var ui = new UiService();
 
-Console.WriteLine("=== PROBLEM 3: Builder — telescoping constructor call sites ===");
+Console.WriteLine();
+
+db.Config.Theme = "Dark";
+Console.WriteLine("Admin changed theme to Dark.");
+
+ui.Render();
+
+Console.WriteLine($"\nSame config object? {ReferenceEquals(db.Config, ui.Config)}");
+Console.WriteLine($"Times config was loaded from disk: {AppConfig.LoadCount}");
+
+Console.WriteLine("\n=== PROTOTYPE: BEFORE ===\n");
+
+var sw = Stopwatch.StartNew();
+var army = new List<Enemy>();
+for (int i = 1; i <= 5; i++)
+{
+    var orc = new Orc();
+    orc.Name = $"Orc-{i}";
+    army.Add(orc);
+}
+Console.WriteLine($"Created 5 orcs in {sw.ElapsedMilliseconds} ms\n");
+
+Enemy original = new Orc();
+original.Name = "Boss Orc";
+Enemy copy = EnemyCopyHelper.CopyEnemy(original);
+
+Console.WriteLine($"\nOriginal model id: {original.ModelId}");
+Console.WriteLine($"Copy model id:     {copy.ModelId}");
+
+copy.Weapon.Damage = 999;
+Console.WriteLine($"\nWe changed the COPY's weapon damage to 999.");
+Console.WriteLine($"Original's weapon damage is now: {original.Weapon.Damage}");
+
+copy.Abilities.Add("Fire Breath");
+Console.WriteLine($"Original abilities: {string.Join(", ", original.Abilities)}");
+
+Console.WriteLine("\n=== BUILDER: BEFORE ===\n");
 Console.WriteLine(RegistrationCallSites.CreateLiveStudentUgly());
 Console.WriteLine(RegistrationCallSites.CreateVideosOnlyUgly());
-Console.WriteLine("Replace call sites with a fluent Builder + validation.");
