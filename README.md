@@ -1,17 +1,13 @@
 # PatternsLab — Creational Patterns (C#)
 
-Three problems. Students apply:
+Three problems:
 
-1. **Singleton** (`Lazy<T>`) — `Problems/Singleton`
-2. **Prototype** (deep clone) — `Problems/Prototype`
-3. **Builder** (fluent) — `Problems/Builder`
+1. **Singleton** — `Problems/Singleton`
+2. **Prototype** — `Problems/Prototype`
+3. **Builder** — `Problems/Builder`
 
 ## Run
 
 ```bash
 dotnet run --project src/PatternsLab.Runner
 ```
-
-## Student brief
-
-Send **[STUDENT_REQUIREMENTS.md](STUDENT_REQUIREMENTS.md)** to the class.
